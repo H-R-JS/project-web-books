@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 
 const connectDb = require("./mongoDB.js");
 const stuffRoutes = require("./routes/stuff.js");
@@ -16,6 +17,8 @@ app.use(
   })
 );
 app.use(express.json());
+
+app.use("/images", express.static(path.join(__dirname, "images")));
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");

@@ -9,7 +9,6 @@ function average(numbers) {
 
 exports.createThing = (req, res, next) => {
   const reqBody = JSON.parse(req.body.book);
-
   const { userId, title, author, year, genre, averageRating } = reqBody;
   console.log(reqBody);
   const ratings = [{ userId: userId, rating: reqBody.ratings[0].grade }];
@@ -131,8 +130,6 @@ exports.rateThing = async (req, res, next) => {
   });
   arrayRatings.push(req.body.rating);
   const averageRating = average(arrayRatings);
-
-  console.log(arrayRatings, averageRating);
 
   Thing.updateOne(
     { _id: req.params.id },
