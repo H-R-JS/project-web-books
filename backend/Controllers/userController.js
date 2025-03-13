@@ -4,7 +4,6 @@ const jwt = require("jsonwebtoken");
 
 exports.handleAuth = async (req, res) => {
   const { email, password } = req.body;
-  console.log("oooooooooooooooooo");
   if (!email || !password) {
     return res.status(400).json({ Message: "Email et Mot de passe requis" });
   }
@@ -47,8 +46,6 @@ exports.handleRegister = async (req, res) => {
       email: email,
       password: hashedPwd,
     });
-
-    console.log(newUser);
     res.status(200).json({ success: `Nouvelle utilisateur créé !` });
   } catch (err) {
     console.error(err);

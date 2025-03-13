@@ -22,7 +22,7 @@ function BookItem({ book, size }) {
       <article>
         <img
           className={styles.BookImage}
-          src={`/images/${book.imageUrl}`}
+          src={`${book.imageUrl}`}
           alt={`${book.title}, ${book.author} - ${book.year}`}
         />
         <div className={styles.BookInfo}>

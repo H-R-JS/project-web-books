@@ -71,7 +71,7 @@ function Book() {
         <div className={styles.Book}>
           <div
             className={styles.BookImage}
-            style={{ backgroundImage: `url("/images/${book.imageUrl}")` }}
+            style={{ backgroundImage: `url("${book.imageUrl}")` }}
           />
           <div className={styles.BookContent}>
             {book?.userId === connectedUser?.userId ? (

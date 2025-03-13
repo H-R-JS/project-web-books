@@ -10,9 +10,8 @@ function average(numbers) {
 exports.createThing = (req, res, next) => {
   const reqBody = JSON.parse(req.body.book);
   const { userId, title, author, year, genre, averageRating } = reqBody;
-  console.log(reqBody);
   const ratings = [{ userId: userId, rating: reqBody.ratings[0].grade }];
-  const imageUrl = req.file.filename;
+  const imageUrl = `/images/${req.file.filename}`;
   if (!title || !author || !imageUrl) {
     return res.status(400).json({ message: "Données manquantes" });
   }
@@ -131,18 +130,18 @@ exports.rateThing = async (req, res, next) => {
   arrayRatings.push(req.body.rating);
   const averageRating = average(arrayRatings);
 
-  Thing.updateOne(
+  Thing.findOneAndUpdate(
     { _id: req.params.id },
-    { $set: { averageRating: averageRating }, $push: { ratings: req.body } }
+    {
+      $set: { averageRating: averageRating },
+      $push: { ratings: req.body },
+    },
+    { new: true }
   )
-    .then(() => {
-      res.status(201).json({
-        message: "Delete !",
-      });
+    .then((updatedThing) => {
+      res.status(200).json(updatedThing);
     })
     .catch((error) => {
-      res.status(400).json({
-        error: error,
-      });
+      res.status(400).json({ error });
     });
 };
