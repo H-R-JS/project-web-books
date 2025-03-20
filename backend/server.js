@@ -3,7 +3,7 @@ const cors = require("cors");
 const path = require("path");
 
 const connectDb = require("./mongoDB.js");
-const stuffRoutes = require("./routes/stuff.js");
+const booksRoutes = require("./routes/books.js");
 const userRoutes = require("./routes/users.js");
 
 const app = express();
@@ -26,5 +26,5 @@ app.listen(port, () => {
   console.log(`Port ${port} is the best !`);
 });
 
-app.use("/api", stuffRoutes);
+app.use("/api", booksRoutes);
 app.use("/api/auth", userRoutes);
