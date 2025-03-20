@@ -26,5 +26,5 @@ app.listen(port, () => {
   console.log(`Port ${port} is the best !`);
 });
 
-app.use("/api/stuff", stuffRoutes);
+app.use("/api", stuffRoutes);
 app.use("/api/auth", userRoutes);

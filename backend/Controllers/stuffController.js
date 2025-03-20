@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const Thing = require("../ModelDB/thing.js");
+const fs = require("fs").promises;
+const path = require("path");
 
 function average(numbers) {
   if (numbers.length === 0) return 0;
@@ -7,11 +9,22 @@ function average(numbers) {
   return sum / numbers.length;
 }
 
+const deleteFile = async (filePath) => {
+  try {
+    await fs.unlink(filePath);
+    console.log(`Fichier supprimé : ${filePath}`);
+  } catch (err) {
+    if (err.code !== "ENOENT") {
+      console.error(`Erreur lors de la suppression de ${filePath} :`, err);
+    }
+  }
+};
+
 exports.createThing = (req, res, next) => {
   const reqBody = JSON.parse(req.body.book);
   const { userId, title, author, year, genre, averageRating } = reqBody;
   const ratings = [{ userId: userId, rating: reqBody.ratings[0].grade }];
-  const imageUrl = `/images/${req.file.filename}`;
+  const imageUrl = `/images/${req.optimizedImage}`;
   if (!title || !author || !imageUrl) {
     return res.status(400).json({ message: "Données manquantes" });
   }
@@ -55,40 +68,80 @@ exports.getOneThing = (req, res, next) => {
 };
 
 exports.modifyThing = (req, res, next) => {
-  const { userId, title, author, year, genre } = req.body;
-
-  if (!title || !author) {
-    return res.status(400).json({ message: "Données manquantes" });
+  // Parser les données du livre depuis req.body.book
+  let bookData;
+  try {
+    bookData = JSON.parse(req.body.book);
+  } catch (error) {
+    return res
+      .status(400)
+      .json({ message: "Format JSON invalide dans req.body.book" });
   }
 
-  const imageUrl = req?.file?.filename;
+  const { userId, title, author, year, genre } = bookData;
 
-  let thingUpdate = { userId, title, author, year, genre };
+  if (!title || !author) {
+    return res
+      .status(400)
+      .json({ message: "Données manquantes (title ou author)" });
+  }
+  const imageUrl = `/images/${req?.optimizedImage}`;
+  console.log(imageUrl);
+  Thing.findOne({ _id: req.params.id })
+    .then(async (thing) => {
+      if (!thing) {
+        return res.status(404).json({ error: "Objet non trouvé" });
+      }
+      if (imageUrl) {
+        await deleteFile(`.${thing.imageUrl}`);
+        console.log("oui");
+      }
 
-  Thing.updateOne({ _id: req.params.id }, { $set: thingUpdate })
-    .then(() => {
-      res.status(201).json({
-        message: "Thing updated successfully!",
-      });
+      let thingUpdate = {
+        userId,
+        title,
+        author,
+        year,
+        genre,
+        ...(imageUrl && { imageUrl }),
+      };
+
+      // Mettre à jour l'objet dans la base de données
+      return Thing.updateOne({ _id: req.params.id }, { $set: thingUpdate })
+        .then(() => {
+          res.status(200).json({ message: "Thing updated successfully!" });
+        })
+        .catch((error) => {
+          res.status(400).json({ error: error.message });
+        });
     })
     .catch((error) => {
-      res.status(400).json({
-        error: error,
-      });
+      res.status(500).json({ error: "Erreur serveur : " + error.message });
     });
 };
 
 exports.deleteThing = (req, res, next) => {
-  Thing.deleteOne({ _id: req.params.id })
-    .then(() => {
-      res.status(201).json({
-        message: "Delete !",
-      });
+  Thing.findOne({ _id: req.params.id })
+    .then(async (thing) => {
+      // Vérifier si l'objet existe
+      if (!thing) {
+        return res.status(404).json({ error: "Objet non trouvé" });
+      }
+      await deleteFile(`.${thing.imageUrl}`);
+      Thing.deleteOne({ _id: req.params.id })
+        .then(() => {
+          res.status(201).json({
+            message: "Delete !",
+          });
+        })
+        .catch((error) => {
+          res.status(400).json({
+            error: error,
+          });
+        });
     })
     .catch((error) => {
-      res.status(400).json({
-        error: error,
-      });
+      res.status(500).json({ error: error });
     });
 };
 
