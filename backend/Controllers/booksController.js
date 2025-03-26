@@ -29,7 +29,7 @@ exports.createBook = (req, res, next) => {
     return res.status(400).json({ message: "Données manquantes" });
   }
 
-  const thing = new Thing({
+  const book = new Book({
     userId,
     title,
     author,
@@ -39,7 +39,7 @@ exports.createBook = (req, res, next) => {
     ratings,
     averageRating,
   });
-  thing
+  book
     .save()
     .then(() => {
       res.status(201).json({
@@ -68,16 +68,15 @@ exports.getOneBook = (req, res, next) => {
 };
 
 exports.modifyBook = (req, res, next) => {
-  // Parser les données du livre depuis req.body.book
   let bookData;
   try {
-    bookData = JSON.parse(req.body.book);
+    bookData =
+      req.body.book === undefined ? req.body : JSON.parse(req.body.book);
   } catch (error) {
     return res
       .status(400)
       .json({ message: "Format JSON invalide dans req.body.book" });
   }
-
   const { userId, title, author, year, genre } = bookData;
 
   if (!title || !author) {
@@ -92,7 +91,7 @@ exports.modifyBook = (req, res, next) => {
       if (!book) {
         return res.status(404).json({ error: "Objet non trouvé" });
       }
-      if (imageUrl) {
+      if (!imageUrl.includes("undefined")) {
         await deleteFile(`.${book.imageUrl}`);
         console.log("oui");
       }
@@ -103,9 +102,9 @@ exports.modifyBook = (req, res, next) => {
         author,
         year,
         genre,
-        ...(imageUrl && { imageUrl }),
+        imageUrl: imageUrl.includes("undefined") ? book.imageUrl : imageUrl,
       };
-
+      console.log(bookUpdate);
       // Mettre à jour l'objet dans la base de données
       return Book.updateOne({ _id: req.params.id }, { $set: bookUpdate })
         .then(() => {
@@ -123,7 +122,6 @@ exports.modifyBook = (req, res, next) => {
 exports.deleteBook = (req, res, next) => {
   Book.findOne({ _id: req.params.id })
     .then(async (book) => {
-      // Vérifier si l'objet existe
       if (!book) {
         return res.status(404).json({ error: "Objet non trouvé" });
       }

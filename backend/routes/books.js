@@ -6,12 +6,12 @@ const uploadWithOptimization = require("../middleware/multer-config");
 
 const BooksCtrl = require("../Controllers/BooksController");
 
-router.get("/book", stuffCtrl.getAllBooks);
-router.get("/books/bestrating", stuffCtrl.getBestBooks);
-router.get("/book/:id", stuffCtrl.getOneBook);
-router.post("/book", auth, uploadWithOptimization, stuffCtrl.createBook);
-router.post("/book/:id/rating", auth, stuffCtrl.rateBook);
-router.put("/book/:id", auth, uploadWithOptimization, stuffCtrl.modifyBook);
-router.delete("/book/:id", auth, stuffCtrl.deleteBook);
+router.get("/book", BooksCtrl.getAllBooks);
+router.get("/books/bestrating", BooksCtrl.getBestBooks);
+router.get("/book/:id", BooksCtrl.getOneBook);
+router.post("/book", auth, uploadWithOptimization, BooksCtrl.createBook);
+router.post("/book/:id/rating", auth, BooksCtrl.rateBook);
+router.put("/book/:id", auth, uploadWithOptimization, BooksCtrl.modifyBook);
+router.delete("/book/:id", auth, BooksCtrl.deleteBook);
 
 module.exports = router;
