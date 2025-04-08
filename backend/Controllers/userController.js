@@ -18,7 +18,9 @@ exports.handleAuth = async (req, res) => {
   const match = await bcrypt.compare(password, user.password);
 
   if (!match)
-    return res.status(400).json({ Message: "Mot de passe incorrect " });
+    return res
+      .status(400)
+      .json({ Message: "Email ou Mot de passe incorrect " });
 
   res.status(200).json({
     userId: user._id,
