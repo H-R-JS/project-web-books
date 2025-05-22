@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
-const Book = require("../ModelDB/book.js");
-const fs = require("fs").promises;
-const path = require("path");
+const mongoose = require('mongoose');
+const Book = require('../ModelDB/book.js');
+const fs = require('fs').promises;
+const path = require('path');
 
 function average(numbers) {
   if (numbers.length === 0) return 0;
@@ -14,7 +14,7 @@ const deleteFile = async (filePath) => {
     await fs.unlink(filePath);
     console.log(`Fichier supprimé : ${filePath}`);
   } catch (err) {
-    if (err.code !== "ENOENT") {
+    if (err.code !== 'ENOENT') {
       console.error(`Erreur lors de la suppression de ${filePath} :`, err);
     }
   }
@@ -22,11 +22,13 @@ const deleteFile = async (filePath) => {
 
 exports.createBook = (req, res, next) => {
   const reqBody = JSON.parse(req.body.book);
-  const { userId, title, author, year, genre, averageRating } = reqBody;
-  const ratings = [{ userId: userId, rating: reqBody.ratings[0].grade }];
+  const {
+    userId, title, author, year, genre, averageRating,
+  } = reqBody;
+  const ratings = [{ userId, rating: reqBody.ratings[0].grade }];
   const imageUrl = `/images/${req.optimizedImage}`;
   if (!title || !author || !imageUrl) {
-    return res.status(400).json({ message: "Données manquantes" });
+    return res.status(400).json({ message: 'Données manquantes' });
   }
 
   const book = new Book({
@@ -43,12 +45,12 @@ exports.createBook = (req, res, next) => {
     .save()
     .then(() => {
       res.status(201).json({
-        message: "Le Livre est enregistré !",
+        message: 'Le Livre est enregistré !',
       });
     })
     .catch((error) => {
       res.status(400).json({
-        error: error,
+        error,
       });
     });
 };
@@ -62,7 +64,7 @@ exports.getOneBook = (req, res, next) => {
     })
     .catch((error) => {
       res.status(404).json({
-        error: error,
+        error,
       });
     });
 };
@@ -70,52 +72,53 @@ exports.getOneBook = (req, res, next) => {
 exports.modifyBook = (req, res, next) => {
   let bookData;
   try {
-    bookData =
-      req.body.book === undefined ? req.body : JSON.parse(req.body.book);
+    bookData = req.body.book === undefined ? req.body : JSON.parse(req.body.book);
   } catch (error) {
     return res
       .status(400)
-      .json({ message: "Format JSON invalide dans req.body.book" });
+      .json({ message: 'Format JSON invalide dans req.body.book' });
   }
-  const { userId, title, author, year, genre } = bookData;
+  const {
+    userId, title, author, year, genre,
+  } = bookData;
 
   if (!title || !author) {
     return res
       .status(400)
-      .json({ message: "Données manquantes (title ou author)" });
+      .json({ message: 'Données manquantes (title ou author)' });
   }
   const imageUrl = `/images/${req?.optimizedImage}`;
   console.log(imageUrl);
   Book.findOne({ _id: req.params.id })
     .then(async (book) => {
       if (!book) {
-        return res.status(404).json({ error: "Objet non trouvé" });
+        return res.status(404).json({ error: 'Objet non trouvé' });
       }
-      if (!imageUrl.includes("undefined")) {
+      if (!imageUrl.includes('undefined')) {
         await deleteFile(`.${book.imageUrl}`);
-        console.log("oui");
+        console.log('oui');
       }
 
-      let bookUpdate = {
+      const bookUpdate = {
         userId,
         title,
         author,
         year,
         genre,
-        imageUrl: imageUrl.includes("undefined") ? book.imageUrl : imageUrl,
+        imageUrl: imageUrl.includes('undefined') ? book.imageUrl : imageUrl,
       };
       console.log(bookUpdate);
       // Mettre à jour l'objet dans la base de données
       return Book.updateOne({ _id: req.params.id }, { $set: bookUpdate })
         .then(() => {
-          res.status(200).json({ message: "Thing updated successfully!" });
+          res.status(200).json({ message: 'Thing updated successfully!' });
         })
         .catch((error) => {
           res.status(400).json({ error: error.message });
         });
     })
     .catch((error) => {
-      res.status(500).json({ error: "Erreur serveur : " + error.message });
+      res.status(500).json({ error: `Erreur serveur : ${error.message}` });
     });
 };
 
@@ -123,23 +126,23 @@ exports.deleteBook = (req, res, next) => {
   Book.findOne({ _id: req.params.id })
     .then(async (book) => {
       if (!book) {
-        return res.status(404).json({ error: "Objet non trouvé" });
+        return res.status(404).json({ error: 'Objet non trouvé' });
       }
       await deleteFile(`.${book.imageUrl}`);
       Book.deleteOne({ _id: req.params.id })
         .then(() => {
           res.status(201).json({
-            message: "Delete !",
+            message: 'Delete !',
           });
         })
         .catch((error) => {
           res.status(400).json({
-            error: error,
+            error,
           });
         });
     })
     .catch((error) => {
-      res.status(500).json({ error: error });
+      res.status(500).json({ error });
     });
 };
 
@@ -150,7 +153,7 @@ exports.getAllBooks = (req, res, next) => {
     })
     .catch((error) => {
       res.status(400).json({
-        error: error,
+        error,
       });
     });
 };
@@ -163,7 +166,7 @@ exports.getBestBooks = (req, res, next) => {
     })
     .catch((error) => {
       res.status(400).json({
-        error: error,
+        error,
       });
     });
 };
@@ -171,7 +174,7 @@ exports.getBestBooks = (req, res, next) => {
 exports.rateBook = async (req, res, next) => {
   const bookFind = await Book.findOne({ _id: req.params.id });
   if (!bookFind) {
-    return res.status(404).json({ error: "Thing not found!" });
+    return res.status(404).json({ error: 'Thing not found!' });
   }
   const arrayRatings = [];
 
@@ -184,10 +187,10 @@ exports.rateBook = async (req, res, next) => {
   Book.findOneAndUpdate(
     { _id: req.params.id },
     {
-      $set: { averageRating: averageRating },
+      $set: { averageRating },
       $push: { ratings: req.body },
     },
-    { new: true }
+    { new: true },
   )
     .then((updatedBook) => {
       res.status(200).json(updatedBook);

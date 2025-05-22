@@ -1,5 +1,5 @@
-require("dotenv").config();
-const mongoose = require("mongoose");
+require('dotenv').config();
+const mongoose = require('mongoose');
 
 const connectDb = async () => {
   try {
@@ -7,12 +7,12 @@ const connectDb = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    console.log("Connexion à MongoDB Atlas réussie !");
+    console.log('Connexion à MongoDB Atlas réussie !');
   } catch (err) {
-    console.error("Erreur de connexion à MongoDB Atlas :", err);
+    console.error('Erreur de connexion à MongoDB Atlas :', err);
   }
 };
 
 module.exports = connectDb;
 
-//mongodb+srv://hjr:<db_password>@clusterbooks.ywcit.mongodb.net/
+// mongodb+srv://hjr:<db_password>@clusterbooks.ywcit.mongodb.net/

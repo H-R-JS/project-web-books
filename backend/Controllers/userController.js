@@ -1,31 +1,33 @@
-const bcrypt = require("bcrypt");
-const UserModel = require("../ModelDB/user.js");
-const jwt = require("jsonwebtoken");
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const UserModel = require('../ModelDB/user.js');
 
 exports.handleAuth = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).json({ Message: "Email et Mot de passe requis" });
+    return res.status(400).json({ Message: 'Email et Mot de passe requis' });
   }
 
-  const user = await UserModel.findOne({ email: email });
+  const user = await UserModel.findOne({ email });
 
-  if (!user)
+  if (!user) {
     return res
       .status(400)
-      .json({ Message: "Utilisateur introuvable, veuillez vous inscrire" });
+      .json({ Message: 'Utilisateur introuvable, veuillez vous inscrire' });
+  }
 
   const match = await bcrypt.compare(password, user.password);
 
-  if (!match)
+  if (!match) {
     return res
       .status(400)
-      .json({ Message: "Email ou Mot de passe incorrect " });
+      .json({ Message: 'Email ou Mot de passe incorrect ' });
+  }
 
   res.status(200).json({
     userId: user._id,
-    token: jwt.sign({ userId: user._id }, "RANDOM_TOKEN_SECRET", {
-      expiresIn: "24h",
+    token: jwt.sign({ userId: user._id }, 'RANDOM_TOKEN_SECRET', {
+      expiresIn: '24h',
     }),
   });
 };
@@ -33,22 +35,20 @@ exports.handleAuth = async (req, res) => {
 exports.handleRegister = async (req, res) => {
   const { email, password } = req.body;
 
-  const emailDuplicate = await UserModel.findOne({ email: email });
+  const emailDuplicate = await UserModel.findOne({ email });
 
-  if (!email || !password)
-    return res.status(400).json({ Message: "Email et Mot de passe requis" });
+  if (!email || !password) return res.status(400).json({ Message: 'Email et Mot de passe requis' });
 
-  if (emailDuplicate !== null)
-    return res.status(400).json({ Message: "Email déjà existant" });
+  if (emailDuplicate !== null) return res.status(400).json({ Message: 'Email déjà existant' });
 
   try {
     const hashedPwd = await bcrypt.hash(password, 10);
 
     const newUser = await UserModel.create({
-      email: email,
+      email,
       password: hashedPwd,
     });
-    res.status(200).json({ success: `Nouvelle utilisateur créé !` });
+    res.status(200).json({ success: 'Nouvelle utilisateur créé !' });
   } catch (err) {
     console.error(err);
   }
